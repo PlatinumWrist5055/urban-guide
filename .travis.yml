@@ -1,0 +1,127 @@
+language: ruby
+sudo: false
+
+cache:
+  directories:
+    - vendor/bundle
+    - /tmp/cache/unicode_conformance
+    - /tmp/beanstalkd-1.10
+    - node_modules
+    - $HOME/.nvm
+
+services:
+  - memcached
+  - redis
+
+addons:
+  postgresql: "9.4"
+  chrome: stable
+
+bundler_args: --without test --jobs 3 --retry 3
+before_install:
+  - "rm ${BUNDLE_GEMFILE}.lock"
+  - "travis_retry gem update --system || travis_retry gem update --system 2.7.8"
+  - "travis_retry gem install bundler || travis_retry gem install bundler -v 1.17.3"
+  - "[ -f /tmp/beanstalkd-1.10/Makefile ] || (curl -L https://github.com/kr/beanstalkd/archive/v1.10.tar.gz | tar xz -C /tmp)"
+  - "pushd /tmp/beanstalkd-1.10 && make && (./beanstalkd &); popd"
+  - "[[ $GEM != 'av:ujs' ]] || nvm install node"
+  - "[[ $GEM != 'av:ujs' ]] || node --version"
+  - "[[ $GEM != 'av:ujs' ]] || (cd actionview && npm install)"
+
+
+before_script:
+  # Set Sauce Labs username and access key. Obfuscated, purposefully not encrypted.
+  # Decodes to e.g. `export VARIABLE=VALUE`
+  - $(base64 --decode <<< "ZXhwb3J0IFNBVUNFX0FDQ0VTU19LRVk9YTAzNTM0M2YtZTkyMi00MGIzLWFhM2MtMDZiM2VhNjM1YzQ4")
+  - $(base64 --decode <<< "ZXhwb3J0IFNBVUNFX1VTRVJOQU1FPXJ1YnlvbnJhaWxz")
+
+script: 'ci/travis.rb'
+
+env:
+  global:
+    - "JRUBY_OPTS='--dev -J-Xmx1024M'"
+  matrix:
+    - "GEM=railties"
+    - "GEM=ap,ac"
+    - "GEM=am,amo,as,av,aj"
+    - "GEM=as PRESERVE_TIMEZONES=1"
+    - "GEM=ar:mysql2"
+    - "GEM=ar:sqlite3"
+    - "GEM=ar:postgresql"
+    - "GEM=guides"
+    - "GEM=ac:integration"
+
+rvm:
+  - 2.2.10
+  - 2.3.7
+  - 2.4.4
+  - 2.5.1
+
+matrix:
+  include:
+    - rvm: 2.4.4
+      env: "GEM=av:ujs"
+    - rvm: 2.5.1
+      env: "GEM=av:ujs"
+    - rvm: 2.2.10
+      env: "GEM=aj:integration"
+      services:
+        - memcached
+        - redis
+        - rabbitmq
+    - rvm: 2.3.7
+      env: "GEM=aj:integration"
+      services:
+        - memcached
+        - redis
+        - rabbitmq
+    - rvm: 2.4.4
+      env: "GEM=aj:integration"
+      services:
+        - memcached
+        - redis
+        - rabbitmq
+    - rvm: 2.5.1
+      env: "GEM=aj:integration"
+      services:
+        - memcached
+        - redis
+        - rabbitmq
+    - rvm: 2.3.7
+      env:
+        - "GEM=ar:mysql2 MYSQL=mariadb"
+      addons:
+        mariadb: 10.2
+    - rvm: 2.3.7
+      env:
+        - "GEM=ar:sqlite3_mem"
+    - rvm: 2.3.7
+      env:
+        - "GEM=ar:postgresql POSTGRES=9.2"
+      addons:
+        postgresql: "9.2"
+    - rvm: jruby-9.1.9.0
+      jdk: oraclejdk8
+      env:
+        - "GEM=ap"
+    - rvm: jruby-9.1.9.0
+      jdk: oraclejdk8
+      env:
+        - "GEM=am,amo,aj"
+  allow_failures:
+    - rvm: jruby-9.1.9.0
+    - env: "GEM=ac:integration"
+  fast_finish: true
+
+notifications:
+  email: false
+  irc:
+    on_success: change
+    on_failure: always
+    channels:
+      - "irc.freenode.org#rails-contrib"
+  campfire:
+    on_success: change
+    on_failure: always
+    rooms:
+      - secure: "YA1alef1ESHWGFNVwvmVGCkMe4cUy4j+UcNvMUESraceiAfVyRMAovlQBGs6\n9kBRm7DHYBUXYC2ABQoJbQRLDr/1B5JPf/M8+Qd7BKu8tcDC03U01SMHFLpO\naOs/HLXcDxtnnpL07tGVsm0zhMc5N8tq4/L3SHxK7Vi+TacwQzI="
