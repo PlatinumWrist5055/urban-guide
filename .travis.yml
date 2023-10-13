@@ -1,0 +1,66 @@
+language: ruby
+sudo: false
+
+cache:
+  bundler: true
+  directories:
+    - /tmp/cache/unicode_conformance
+    - /tmp/beanstalkd-1.10
+
+services:
+  - memcached
+  - redis
+  - rabbitmq
+
+addons:
+  postgresql: "9.4"
+
+bundler_args: --without test --jobs 3 --retry 3
+before_install:
+  - "rm ${BUNDLE_GEMFILE}.lock"
+  - "[ -f /tmp/beanstalkd-1.10/Makefile ] || (curl -L https://github.com/kr/beanstalkd/archive/v1.10.tar.gz | tar xz -C /tmp)"
+  - "pushd /tmp/beanstalkd-1.10 && make && (./beanstalkd &); popd"
+
+before_script:
+  - bundle update
+
+script: 'ci/travis.rb'
+
+env:
+  matrix:
+    - "Z=1 FIX=1 GEM=as"
+    - "Z=2 FIX=1 GEM=as"
+    - "Z=3 FIX=1 GEM=as"
+    - "Z=4 FIX=1 GEM=as"
+    - "Z=1 FIX=1 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=2 FIX=1 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=3 FIX=1 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=4 FIX=1 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=1 GEM=as"
+    - "Z=2 GEM=as"
+    - "Z=3 GEM=as"
+    - "Z=4 GEM=as"
+    - "Z=1 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=2 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=3 GEM=as PRESERVE_TIMEZONES=1"
+    - "Z=4 GEM=as PRESERVE_TIMEZONES=1"
+
+rvm:
+  - 2.2.5
+  - 2.3.1
+
+matrix:
+  fast_finish: true
+
+notifications:
+  email: false
+  irc:
+    on_success: change
+    on_failure: always
+    channels:
+      - "irc.freenode.org#rails-contrib"
+  campfire:
+    on_success: change
+    on_failure: always
+    rooms:
+      - secure: "YA1alef1ESHWGFNVwvmVGCkMe4cUy4j+UcNvMUESraceiAfVyRMAovlQBGs6\n9kBRm7DHYBUXYC2ABQoJbQRLDr/1B5JPf/M8+Qd7BKu8tcDC03U01SMHFLpO\naOs/HLXcDxtnnpL07tGVsm0zhMc5N8tq4/L3SHxK7Vi+TacwQzI="
