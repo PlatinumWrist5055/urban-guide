@@ -1,0 +1,53 @@
+language: ruby
+sudo: false
+
+cache:
+  bundler: true
+
+bundler_args: --without test --jobs 3 --retry 3
+before_install:
+  - "rm ${BUNDLE_GEMFILE}.lock"
+
+before_script:
+  - bundle update
+
+script: 'ci/travis.rb'
+
+env:
+  global:
+    - LISTEN_GEM_DEBUGGING=2
+    - GEM=as
+  matrix:
+    - LISTEN=1 LISTEN_GC_FIX=1
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=0
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=2
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=3
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=4
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=5
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=6
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=7
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=8
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=9
+    - LISTEN=1 LISTEN_GC_FIX=0 Z=9
+    - LISTEN=0
+
+rvm:
+  - 2.2.5
+  - 2.3.1
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+  fast_finish: true
+notifications:
+  email: false
+  irc:
+    on_success: change
+    on_failure: always
+    channels:
+      - "irc.freenode.org#rails-contrib"
+  campfire:
+    on_success: change
+    on_failure: always
+    rooms:
+      - secure: "YA1alef1ESHWGFNVwvmVGCkMe4cUy4j+UcNvMUESraceiAfVyRMAovlQBGs6\n9kBRm7DHYBUXYC2ABQoJbQRLDr/1B5JPf/M8+Qd7BKu8tcDC03U01SMHFLpO\naOs/HLXcDxtnnpL07tGVsm0zhMc5N8tq4/L3SHxK7Vi+TacwQzI="
