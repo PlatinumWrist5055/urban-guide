@@ -34,7 +34,7 @@
     "karma-sauce-launcher": "^1.2.0",
     "mock-socket": "^2.0.0",
     "qunit": "^2.8.0",
-    "rollup": "^0.58.2",
+    "rollup": "^2.79.2",
     "rollup-plugin-babel": "^3.0.4",
     "rollup-plugin-commonjs": "^9.1.0",
     "rollup-plugin-node-resolve": "^3.3.0",
